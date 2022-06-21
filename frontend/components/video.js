@@ -43,7 +43,7 @@ const Video = ({
     <div className={style.wrapper}>
       <video
         className={style.videoPlayer}
-        loop
+        loop controls autoPlay
         onClick={onVideoPress}
         ref={videoRef}
         src={url}

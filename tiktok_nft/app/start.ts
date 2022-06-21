@@ -1,15 +1,15 @@
+import * as anchor from "@project-serum/anchor";
+import { Program } from "@project-serum/anchor";
+import { TiktokNft } from "../target/types/tiktok_nft";
 
-import type { TiktokClone } from "../target/types/tiktok_clone";
-
-const anchor = require('@project-serum/anchor');
+// const anchor = require('@project-serum/anchor');
 const { TOKEN_PROGRAM_ID } = require("@solana/spl-token");
 const _ = require('lodash')
 const { web3 } = anchor
 const { SystemProgram } = web3
 const assert = require("assert");
 const utf8 = anchor.utils.bytes.utf8;
-// const provider = anchor.Provider.local();
-const provider = anchor.AnchorProvider.local();
+const provider = anchor.AnchorProvider.env()
 
 
 const defaultAccounts = {
@@ -20,7 +20,7 @@ const defaultAccounts = {
 
 // Configure the client to use the local cluster.
 anchor.setProvider(provider);
-const program = anchor.workspace.TiktokClone;
+const program = anchor.workspace.TiktokNft as Program<TiktokNft>;
 let creatorKey = provider.wallet.publicKey;
 let stateSigner;
 
@@ -35,7 +35,7 @@ const run =  async () => {
     console.log(stateInfo);
   }
   catch{
-    await program.rpc.initialize({
+    await program.rpc.createState({
       accounts: {
         state: stateSigner,
         authority: creatorKey,

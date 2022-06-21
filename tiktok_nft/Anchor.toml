@@ -1,0 +1,18 @@
+[features]
+seeds = false
+
+[programs.devnet]
+tiktok_nft = "CNk5L3fPNpKMWBaUVxhCezoU97gjLhdQuj3mLPTcBGcY"
+
+[programs.localnet]
+tiktok_nft = "CNk5L3fPNpKMWBaUVxhCezoU97gjLhdQuj3mLPTcBGcY"
+
+[registry]
+url = "https://anchor.projectserum.com"
+
+[provider]
+cluster = "devnet"
+wallet = "/home/duyman/.config/solana/id.json"
+
+[scripts]
+test = "yarn run ts-mocha -p ./tsconfig.json -t 1000000 tests/**/*.ts"

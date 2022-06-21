@@ -50,3 +50,6 @@ node_modules
 .netlify
 
 test-ledger/
+tiktok_nft/node_modules
+tiktok_nft/target
+tiktok_nft/yarn.lock

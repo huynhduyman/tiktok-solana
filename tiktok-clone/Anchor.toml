@@ -5,16 +5,19 @@ seeds = false
 tiktok_clone = "4AgStVZD26kU6q75igrLHCJQbh4NKt2RggWYWts3j78r"
 
 [programs.localnet]
-tiktok_clone = "NyghDyGchETGAu6yVXSZyBndmS4b7QUG77vdk1s9WUy"
+tiktok_clone = "7hK31f2WnAeGeFkwNRfNCiKW1bx2PhaTB3jK719r7CXf"
 
 [registry]
 url = "https://anchor.projectserum.com"
 
 [provider]
-cluster = "devnet"
+cluster = "localnet"
 #cluster = "localnet"
 
-wallet = "./id.json"
+wallet = "/home/duyman/.config/solana/id.json"
+
+[workspace]
+types = "../frontend/utils/"
 
 [scripts]
 test = "yarn run ts-mocha -p ./tsconfig.json -t 1000000 tests/**/*.ts"

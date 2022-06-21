@@ -6,7 +6,7 @@ use anchor_lang::solana_program::log::{
     sol_log_compute_units
 };
 // Declare program ID
-declare_id!("7hK31f2WnAeGeFkwNRfNCiKW1bx2PhaTB3jK719r7CXf");
+declare_id!("CNk5L3fPNpKMWBaUVxhCezoU97gjLhdQuj3mLPTcBGcY");
 
 // Video and comment text length
 const TEXT_LENGTH: usize = 1024;
@@ -18,21 +18,29 @@ const VIDEO_URL_LENGTH: usize = 255;
 
 const NUMBER_OF_ALLOWED_LIKES_SPACE: usize = 5;
 const NUMBER_OF_ALLOWED_LIKES: u8 = 5;
+
 /// TikTok Clone program
 #[program]
-pub mod tiktok_clone {
+pub mod tiktok_nft {
     use super::*;
 
-    // pub fn initialize(ctx: Context<Initialize>) -> Result<()> {
+    // /// Create state to save the video counts
+    // /// There is only one state in the program
+    // /// This account should be initialized before video
+    // pub fn initialize(ctx: Context<Initialize>, data: u64, user: Pubkey) -> Result<()> {
+    //     let my_account = &mut ctx.accounts.my_account;
+    //     my_account.data = data;
+    //     my_account.user = user;
     //     Ok(())
     // }
 
-    /// Create state to save the video counts
-    /// There is only one state in the program
-    /// This account should be initialized before video
-    pub fn initialize(
-        ctx: Context<Initialize>,
-    ) -> ProgramResult {
+    // pub fn update(ctx: Context<Update>, data: u64) -> Result<()> {
+    //     let my_account = &mut ctx.accounts.my_account;
+    //     my_account.data = data;
+    //     Ok(())
+    // }
+
+    pub fn create_state(ctx: Context<CreateState>) -> Result<()> {
         // Get state from context
         let state = &mut ctx.accounts.state;
         // Save authority to state
@@ -49,7 +57,7 @@ pub mod tiktok_clone {
         ctx: Context<CreateUser>,
         name: String,
         profile_url: String
-    ) -> ProgramResult {
+    ) -> Result<()> {
         // Get State
 
        if name.trim().is_empty() || profile_url.trim().is_empty() {
@@ -78,7 +86,7 @@ pub mod tiktok_clone {
         video_url: String,
         creator_name: String,
         creator_url: String,
-    ) -> ProgramResult {
+    ) -> Result<()> {
         // Get State
        msg!(&description);  //logging
 
@@ -116,8 +124,6 @@ pub mod tiktok_clone {
         sol_log_compute_units(); //Logs how many compute units are left, important for budget
         Ok(())
     }
-
-
     /// Create comment for video
     /// @param text:            text of comment
     /// @param commenter_name:  name of comment creator
@@ -127,7 +133,7 @@ pub mod tiktok_clone {
         text: String,
         commenter_name: String,
         commenter_url: String,
-    ) -> ProgramResult {
+    ) -> Result<()> {
 
         // Get video
         let video = &mut ctx.accounts.video;
@@ -157,7 +163,7 @@ pub mod tiktok_clone {
 
     pub fn approve(
         ctx: Context<CreateComment>,
-    ) -> ProgramResult {
+    ) -> Result<()> {
         // Get video
         let video = &mut ctx.accounts.video;
 
@@ -170,7 +176,7 @@ pub mod tiktok_clone {
     pub fn disapprove(
         ctx: Context<CreateComment>,
 
-    ) -> ProgramResult {
+    ) -> Result<()> {
         // Get video
         let video = &mut ctx.accounts.video;
 
@@ -180,7 +186,9 @@ pub mod tiktok_clone {
         Ok(())
     }
 
-    pub fn like_video(ctx: Context<LikeVideo>) -> ProgramResult {
+    pub fn like_video(
+        ctx: Context<LikeVideo>
+    ) -> Result<()> {
         let video = &mut ctx.accounts.video;
 
         if video.likes == NUMBER_OF_ALLOWED_LIKES {
@@ -203,13 +211,16 @@ pub mod tiktok_clone {
         Ok(())
     }
 
+
+
 }
 
 /// Contexts
 /// CreateState context
 #[derive(Accounts)]
-pub struct Initialize<'info> {
+pub struct CreateState<'info> {
     // Authenticating state account
+  
     #[account(
         init,
         seeds = [b"state".as_ref()],
@@ -225,7 +236,7 @@ pub struct Initialize<'info> {
 
     /// System program
     /// CHECK: Simple test account for tiktok
-    pub system_program: UncheckedAccount<'info>,
+    pub system_program: Program<'info, System>,
 
     // Token program
     #[account(constraint = token_program.key == &token::ID)]
@@ -252,7 +263,7 @@ pub struct CreateUser<'info> {
 
     /// System program
     /// CHECK: Simple test account for tiktok
-    pub system_program: UncheckedAccount<'info>,
+    pub system_program: Program<'info, System>,
 
     // Token program
     #[account(constraint = token_program.key == &token::ID)]
@@ -286,7 +297,7 @@ pub struct CreateVideo<'info> {
 
     /// System program
     /// CHECK: Simple test account for tiktok
-    pub system_program: UncheckedAccount<'info>,
+    pub system_program: Program<'info, System>,
 
     // Token program
     #[account(constraint = token_program.key == &token::ID)]
@@ -341,7 +352,7 @@ pub struct LikeVideo<'info> {
 
     /// System program
     /// CHECK: Simple test account for tiktok
-    pub system_program: UncheckedAccount<'info>,
+    pub system_program: Program<'info, System>,
 
     // Token program
     #[account(constraint = token_program.key == &token::ID)]
@@ -362,7 +373,6 @@ pub struct DisApprove<'info> {
     #[account(mut)]
     pub video: Account<'info, VideoAccount>
 }
-
 
 // State Account Structure
 #[account]
@@ -446,7 +456,7 @@ pub struct CommentAccount {
 }
 
 
-#[error]
+#[error_code]
 pub enum Errors {
     #[msg("User cannot be created, missing data")]
     CannotCreateUser,
@@ -464,3 +474,58 @@ pub enum Errors {
     #[msg("Video with potentially bad content")]
     UserCensoredVideo,
 }
+
+// /// Contexts
+// /// CreateState context
+// #[derive(Accounts)]
+// pub struct Initialize<'info> {
+//     // Authenticating state account
+//     #[account(
+//         init, 
+//         payer = user, 
+//         space = size_of::<MyAccount>() + 8
+//     )]
+//     // #[account(
+//     //     init,
+//     //     seeds = [b"state".as_ref()],
+//     //     bump,
+//     //     payer = authority,
+//     //     space = size_of::<StateAccount>() + 8
+//     // )]
+//     pub my_account: Account<'info, MyAccount>,
+
+//     // Authority (this is signer who paid transaction fee)
+//     #[account(mut)]
+//     pub user: Signer<'info>,
+
+//     /// System program
+//     /// CHECK: Simple test account for tiktok
+//     pub system_program: Program<'info, System>,
+
+//     // Token program
+//     #[account(constraint = token_program.key == &token::ID)]
+//     pub token_program: Program<'info, Token>,
+// }
+
+
+// #[derive(Accounts)]
+// pub struct Update<'info> {
+//     #[account(mut)]
+//     pub my_account: Account<'info, MyAccount>,
+// }
+
+// // State Account Structure
+// #[account]
+// pub struct MyAccount {
+//     // Signer address
+//     pub user: Pubkey,
+
+//     // Video count
+//     pub data: u64,
+// }
+
+// #[error_code]
+// pub enum Errors {
+//     #[msg("User cannot be created, missing data")]
+//     CannotCreateUser,
+// }

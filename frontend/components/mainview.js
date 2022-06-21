@@ -32,6 +32,8 @@ const MainView = () => {
   const program = getProgramInstance(connection, wallet)
 
   const [tiktoks, setTikToks] = useState([])
+  tiktoks.sort(() => Math.random() - 0.5);
+  // console.log(tiktoks);
 
   const [newVideoShow, setNewVideoShow] = useState(false)
   const [description, setDescription] = useState('')
